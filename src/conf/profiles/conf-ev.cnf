@@ -1,0 +1,33 @@
+### Configuração de uso exclusivo da CA ###
+[ req ]
+default_bits            = 2048
+default_md              = sha256
+distinguished_name      = req_dn
+req_extensions          = req_ext
+string_mask             = utf8only
+prompt                  = no
+encrypt_key             = yes
+
+[ req_ext ]
+basicConstraints = CA:FALSE
+subjectKeyIdentifier = hash
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
+certificatePolicies = 2.23.140.1.1
+subjectAltName = @alt_names
+
+### Configuração para CSR ###
+[ req_dn ]
+countryName                     = BR
+stateOrProvinceName             = Distrito Federal
+localityName                    = Brasilia
+organizationName                = Razao Social Parceiro - Parceiro BRB
+organizationalUnitName          = Nome Parceiro - Parceiro BRB
+commonName                      = nome_parceiro.brb.com.br
+businessCategory                = Private Organization
+serialNumber                    = 00000208000100
+jurisdictionCountryName         = BR
+
+[ alt_names ]
+DNS.1 = nome_parceiro.brb.com.br
+DNS.2 = www.nome_parceiro.brb.com.br

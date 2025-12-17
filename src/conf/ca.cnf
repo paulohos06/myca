@@ -1,0 +1,67 @@
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+# Diretórios e arquivos
+dir             = /pathdir/           # diretorio raiz da CA
+certs           = $dir/certs			    # onde ficam os certificados emitidos
+crl_dir					= $dir/crl				    # onde a CRL fica
+new_certs_dir   = $dir/newcerts		    # onde os certificados de copia ficam
+database				= $dir/index.txt	    # arquivo de banco de dados
+serial					= $dir/serial			    # arquivo de numero de serie
+crl             = $dir/crl.pem		    # CRL atual
+copy_extensions = copyall             # copia todas as extensoes existentes na CSR
+
+# Algoritmos e configurações
+private_key			= $dir/private/ca.key.pem	  # chave privada da CA
+certificate			= $dir/certs/ca.cert.pem		# certificado da CA
+default_days		= 3650                      # validade de 10 por padrão
+default_md			= sha256                    # algoritmo de hash padrão
+
+[ policy_dv ]
+commonName = supplied
+
+[ policy_ov ]
+countryName              = supplied
+stateOrProvinceName	     = supplied
+organizationName         = supplied
+organizationalUnitName	 = optional
+commonName               = supplied
+emailAddress             = optional
+
+[ policy_ev ]
+countryName             = supplied
+stateOrProvinceName     = supplied
+localityName            = supplied
+organizationName        = supplied
+organizationalUnitName  = optional
+commonName              = supplied
+businessCategory        = supplied
+serialNumber            = supplied
+jurisdictionCountryName = supplied
+emailAddress            = optional
+
+[ req ]
+default_bits            = 4096
+default_md              = sha256
+default_keyfile         = ca.key.pem
+distinguished_name      = req_dn
+x509_extensions         = req_ext
+
+[ req_dn ]
+countryName                     = Country Name (2 letter code)
+countryName_default             = BR
+stateOrProvinceName             = State or Province Name (full name)
+stateOrProvinceName_default     = Distrito Federal
+localityName                    = Locality Name (eg, city)
+localityName_default            = Brasilia
+0.organizationName              = Organization Name (eg, company)
+organizationalUnitName          = Organizational Unit Name (eg, section)
+commonName                      = Common Name (e.g. server FQDN or YOUR name)
+
+[ req_ext ]
+basicConstraints = critical, CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+nsCertType = sslCA, emailCA
