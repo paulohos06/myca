@@ -85,7 +85,7 @@ newrootca() {
         -new -x509 -days 3650 -sha512 \
         -out "$cert_file"
 
-    echo -e "\n[OK] AC Raiz '$name' pronta."
+    echo -e "\n[OK] AC Raiz '$name' criada com sucesso."
     echo "Localização: $module_path"
 }
 

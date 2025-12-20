@@ -14,7 +14,7 @@ ca_dir := ./ca
 # Verifica se a variável foi definida, caso contrário interrompe com erro.
 check_var = $(if $(strip $($1)),,$(error Erro: A variável '$1' não foi definida. Use '$1=<valor>'))
 
-.PHONY: help setup-ca create-csr sign-csr
+.PHONY: help setup-ca create-csr sign-csr remove-ca
 
 help: ## Exibe esta mensagem de ajuda
 	@echo -e "$(YELLOW)Comandos disponíveis:$(RESET)"
@@ -37,14 +37,9 @@ sign-csr: ## Assina uma CSR existente. Ex: make sign-csr ca=minha-ca domain=exem
 	@echo -e "$(YELLOW)Assinando certificado para $(domain) com a CA $(ca)...$(RESET)"
 	bash src/03-sign-csr.sh -n $(ca) -d $(domain) -v $(val)
 
-remove-ca:
+remove-ca: ## Remove uma CA existente: Ex: make remove-ca ca=minha-ca
 	@$(call check_var,ca)
-	@echo -e "$(RED)[ATENÇÃO]: Você está prestes a excluir permanentemente a CA '$(ca)' e todas as suas chaves!$(RESET)"
+	@echo -e "$(YELLOW)[ATENÇÃO]: Você está prestes a excluir permanentemente a CA '$(ca)' e todas as suas chaves!$(RESET)"
 	@read -p "Tem certeza que deseja continuar? [y/N] " ans && [ $${ans:-N} = y ] || (echo "Operação cancelada."; exit 1)
 	rm -rf $(ca_dir)/$(ca)/
 	@echo -e "CA '$(ca)' removida com sucesso."
-
-clean-ca: ## (Opcional) Remove arquivos temporários de uma CA específica
-	@$(call check_var,ca)
-	@echo -e "$(YELLOW)Limpando arquivos da CA $(ca)...$(RESET)"
-	rm -rf $(ca_dir)/$(ca)/csr/*
