@@ -3,7 +3,8 @@
 
 
 # Função para exibir mensagens de erro e sair
-error_exit() {
+
+ierror_exit() {
     echo -e "\n[ERRO] $1" >&2 # Redireciona para stderr
     exit 1
 }
