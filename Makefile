@@ -39,8 +39,10 @@ sign-csr: ## Assina uma CSR existente. Ex: make sign-csr ca=minha-ca domain=exem
 
 remove-ca:
 	@$(call check_var,ca)
-	@echo -e "$(RED)Atenção! Remoção da CA $(ca)...$(RESET)"
+	@echo -e "$(RED)[ATENÇÃO]: Você está prestes a excluir permanentemente a CA '$(ca)' e todas as suas chaves!$(RESET)"
+	@read -p "Tem certeza que deseja continuar? [y/N] " ans && [ $${ans:-N} = y ] || (echo "Operação cancelada."; exit 1)
 	rm -rf $(ca_dir)/$(ca)/
+	@echo -e "CA '$(ca)' removida com sucesso."
 
 clean-ca: ## (Opcional) Remove arquivos temporários de uma CA específica
 	@$(call check_var,ca)
