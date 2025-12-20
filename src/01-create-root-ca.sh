@@ -12,8 +12,8 @@ else
 fi
 
 # --- Variáveis Globais ---
-PKI_BASE_DIR="$(get_script_path)"
-PARENT_DIR="$(dirname "$PKI_BASE_DIR")"
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(dirname "$SRC_DIR")"
 PKI_SUBDIRS=(certs conf crl csr newcerts private)
 MODULE_NAME="" # preenchida pelo getops
 
@@ -48,16 +48,16 @@ newrootca() {
   echo "[+] Inicializando arquivos de índice e permissões..."
   chmod 700 "$CA_BASE_DIR/$module_name/private"
   touch "$CA_BASE_DIR/$module_name/index.txt"
-  echo 1000 > "$CA_BASE_DIR/$module_name/serial"
-  echo 1000 > "$CA_BASE_DIR/$module_name/crlnumber"
+  #echo 1000 > "$CA_BASE_DIR/$module_name/serial"
+  #echo 1000 > "$CA_BASE_DIR/$module_name/crlnumber"
 
   ## etapa 4. Copia os arquivos de configuração
   echo "[+] Copiando arquivos de configuração..."
   if [[ -d "$CA_BASE_DIR/$module_name"/conf ]]; then
-    cp -r "$PARENT_DIR/src/conf/ca.cnf" "$CA_BASE_DIR/$module_name/conf/$module_name.cnf" || error_exit "Falha ao copiar o arquivo de configuração da CA"
-    cp -r "$PARENT_DIR/src/conf/profiles" "$CA_BASE_DIR/$module_name/conf/" || error_exit "Falha ao copiar arquivos de configuração."
+    cp -r "$SRC_DIR/conf/ca.cnf" "$CA_BASE_DIR/$module_name/conf/$module_name.cnf" || error_exit "Falha ao copiar o arquivo de configuração da CA"
+    cp -r "$SRC_DIR/conf/profiles" "$CA_BASE_DIR/$module_name/conf/" || error_exit "Falha ao copiar arquivos de configuração."
     sed -i \
-      -e "s|/pathdir/|$(pwd)/$module_name|" \
+      -e "s|/pathdir/|$CA_BASE_DIR/$module_name|" \
       -e "s|ca.key.pem|$module_name.key.pem|" \
       -e "s|ca.cert.pem|$module_name.cert.pem|" \
 		  "$CA_BASE_DIR/$module_name/conf/$module_name.cnf"
