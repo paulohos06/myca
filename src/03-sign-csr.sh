@@ -87,7 +87,7 @@ while getopts "n:d:v:" opt; do
     n) CA_NAME="$OPTARG" ;;
     d) CSR_NAME="$OPTARG" ;;
     v) VALIDATION="$OPTARG" ;;
-    *) echo "Uso: $0 -n <nome_ca> -d <dominio> -v <DV|OV|EV>" ; exit 1 ;;
+    *) showhelp ;;
   esac
 done
 

@@ -20,9 +20,11 @@ fi
 newcsr() {
     local ca_name="${1:-}"
     local domain_name="${2:-}"
-    local valtype="${3:-EV}" # Default para EV se vazio
-    
-    # Validação rigorosa de parâmetros
+    local validation="${3:-EV}" # Default para EV se vazio
+    local cyear=$(date +%Y)
+		local nyear=$(date --date '1 year' "+%Y")
+
+    # Validação de parâmetros
     [[ -z "$ca_name" ]] && error_exit "O nome da CA (-n) é obrigatório."
     [[ -z "$domain_name" ]] && error_exit "O domínio (-d) é obrigatório."
 
@@ -31,7 +33,7 @@ newcsr() {
     local csr_dir="$base_path/csr/$domain_name"
     local key_dir="$base_path/private/$domain_name"
     local new_key_file="$key_dir/$domain_name.key.pem"
-    local new_csr_file="$csr_dir/$domain_name.csr.pem"
+    local new_csr_file="$csr_dir/${domain_name}_${cyear}-${nyear}.csr.pem"
     local new_conf_file="$csr_dir/$domain_name.cnf"
 
     # 1. Validação de infraestrutura
@@ -52,11 +54,11 @@ newcsr() {
 
     # 4. Seleção do Template de Configuração
     local template_conf=""
-    case "${valtype^^}" in # Converte para maiúsculas
+    case "${validation^^}" in # Converte para maiúsculas
         DV) template_conf="$SRC_DIR/conf/profiles/conf-scripts/conf-dv.cnf" ;;
         OV) template_conf="$SRC_DIR/conf/profiles/conf-scripts/conf-ov.cnf" ;;
         EV) template_conf="$SRC_DIR/conf/profiles/conf-scripts/conf-ev.cnf" ;;
-        *)  error_exit "Tipo de validação '$valtype' inválido. Use DV, OV ou EV." ;;
+        *)  error_exit "Tipo de validação '$validation' inválido. Use DV, OV ou EV." ;;
     esac
 
     [[ ! -f "$template_conf" ]] && error_exit "Template de configuração não encontrado: $template_conf"
@@ -68,6 +70,10 @@ newcsr() {
     # 6. Geração da CSR
     echo "[INFO] Criando a CSR para $domain_name..."
     if openssl req -new -key "$new_key_file" -out "$new_csr_file" -config "$new_conf_file"; then
+				new_domain_name="$(openssl req -in "$new_csr_file" -noout -subject | sed -n 's/.*CN=\([^,]*\).*/\1/p')"
+				if [[ "$domain_name.brb.com.br" != "$new_domain_name" ]]; then
+          echo "CN diferentes"
+				fi
         echo "[OK] Sucesso! CSR gerada em: $new_csr_file"
     else
         error_exit "Falha na execução do OpenSSL ao gerar CSR."
@@ -84,8 +90,8 @@ while getopts "n:d:v:h" opt; do
         n) CA_NAME="$OPTARG" ;;
         d) DOMAIN_NAME="$OPTARG" ;;
         v) VAL_LEVEL="$OPTARG" ;;
-        h) usage ;;
-        *) usage ;;
+        h) showhelp ;;
+        *) showhelp ;;
     esac
 done
 

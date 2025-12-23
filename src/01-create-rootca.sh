@@ -20,7 +20,6 @@ else
 fi
 
 # --- Funções Internas ---
-
 setup_structure() {
     local module_path="$1"
     echo "[+] Criando estrutura de diretórios em $module_path..."
@@ -56,14 +55,15 @@ configure_ca() {
 }
 
 newrootca() {
-    local name="${1:-}"
+    local name_input="${1:-}"
+		local name=$(formatstring "$name_input")
     local module_path="$CA_BASE_DIR/$name"
 
     # Validações Iniciais
-    [[ -z "$name" ]] && { echo "Erro: Nome da AC não fornecido."; usage; }
+    [[ -z "$name" ]] && { error_exit "O nome da AC não foi fornecido."; }
     [[ -d "$module_path" ]] && error_exit "A AC '$name' já existe em $module_path."
 
-    echo "--- Iniciando criação da Root CA: $name ---"
+    echo "[+] Iniciando criação da Root CA: $name"
 
     # 1. Preparar Diretórios
     setup_structure "$module_path"
@@ -82,7 +82,7 @@ newrootca() {
     echo "[+] Gerando certificado Root (3650 dias)..."
     openssl req -config "$module_path/conf/$name.cnf" \
         -key "$key_file" \
-        -new -x509 -days 3650 -sha512 \
+        -new -x509 -days 3650 -sha256 \
         -out "$cert_file"
 
     echo -e "\n[OK] AC Raiz '$name' criada com sucesso."

@@ -4,26 +4,13 @@
 
 # Função para exibir mensagens de erro e sair
 
-ierror_exit() {
+error_exit() {
     echo -e "\n[ERRO] $1" >&2 # Redireciona para stderr
     exit 1
 }
 
-# Função de ajuda
-show_help() {
-  echo "MyCA - Autoridade Certificadora Interna (RootCA)"
-	
-	if [[ "$1" == "create_root" ]]; then
-		echo "Opções:"
-		echo "   -n <ca_name>      Informa qual CA assinará o certificado."
-    echo "   -h                Exibe esta mensagem de ajuda."
-	elif [[ "$1" == "sign_csr" ]]; then
-    echo "Uso: $0 -n <ca_name> -c <csr_name>"
-		echo "Opções:"
-		echo "   -n <ca_name>      Informa qual CA assinará o certificado."
-		echo "   -d <domain_name>  Informa qual o nome do domínio da CSR."
-    echo "   -h                Exibe esta mensagem de ajuda."
-	fi
+showhelp() {
+	echo -e "[WARN] Show Help"
 }
 
 # Função para validar o nome do módulo
@@ -49,4 +36,20 @@ get_script_path() {
 
   # Retorna o valor do diretório anterior
   echo "$(dirname "$script_dir")"
+}
+
+formatstring() {
+    local input="$1"
+
+    # 1. Remove espaços no início e no final (trim)
+    # 2. Converte para minúscula
+    # 3. Remove acentos usando iconv (converte para ASCII puro)
+    # 4. Remove todos os espaços internos
+
+    echo "$input" | \
+        sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
+        tr '[:upper:]' '[:lower:]' | \
+        iconv -f UTF-8 -t ASCII//TRANSLIT | \
+        tr -d '[:space:]'
+        #sed 's/[^a-z0-9]//g'
 }

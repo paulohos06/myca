@@ -3,14 +3,15 @@ default_ca = CA_default
 
 [ CA_default ]
 # Diretórios e arquivos
-dir             = /pathdir/           # diretorio raiz da CA
-certs           = $dir/certs			    # onde ficam os certificados emitidos
-crl_dir					= $dir/crl				    # onde a CRL fica
-new_certs_dir   = $dir/newcerts		    # onde os certificados de copia ficam
-database				= $dir/index.txt	    # arquivo de banco de dados
-serial					= $dir/serial			    # arquivo de numero de serie
-crl             = $dir/crl.pem		    # CRL atual
-copy_extensions = copyall             # copia todas as extensoes existentes na CSR
+dir              = /pathdir/           # diretorio raiz da CA
+certs            = $dir/certs			    # onde ficam os certificados emitidos
+crl_dir					 = $dir/crl				    # onde a CRL fica
+new_certs_dir    = $dir/newcerts		    # onde os certificados de copia ficam
+database				 = $dir/index.txt	    # arquivo de banco de dados
+serial					 = $dir/serial			    # arquivo de numero de serie
+crl              = $dir/crl.pem		    # CRL atual
+copy_extensions  = copyall             # copia todas as extensoes existentes na CSR
+default_crl_days = 180
 
 # Algoritmos e configurações
 private_key			= $dir/private/ca.key.pem	  # chave privada da CA
