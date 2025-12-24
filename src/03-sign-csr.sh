@@ -22,6 +22,8 @@ newcert() {
   local domain_name="${2:-}"
   local validation="${3:-EV}"
   local policy=""
+	local cyear=$(date +%Y)
+  local nyear=$(date --date '1 year' "+%Y")
 
   # Validação de argumentos obrigatórios
   [[ -z "$ca_name" ]] && error_exit "O nome da CA (-n) é obrigatório."
@@ -32,7 +34,7 @@ newcert() {
   local csr_dir="$base_path/csr/$domain_name"
   local new_cert_dir="$base_path/certs/$domain_name"
   local ca_conf_file="$base_path/conf/$ca_name.cnf"
-  local new_cert_file="$new_cert_dir/$domain_name.cert.pem"
+  local new_cert_file="$new_cert_dir/${domain_name}_${cyear}-${nyear}.cert.pem"
   
   # 1. Validação de Infraestrutura
   [[ ! -d "$base_path" ]] && error_exit "Estrutura da CA '$ca_name' não encontrada em $base_path"

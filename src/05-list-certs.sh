@@ -37,13 +37,13 @@ listcerts() {
 	echo "==============================================================="
 
 	# --- CERTIFICADOS VÁLIDOS ---
-	echo -e "\n[+] CERTIFICADOS VÁLIDOS (ATIVOS):"
+	echo -e "\n[OK] CERTIFICADOS VÁLIDOS (ATIVOS):"
 	echo "---------------------------------------------------------"
 	printf "%-10s | %-15s | %s\n" "SERIAL" "EXPIRA EM" "SUBJECT (DN)"
 	awk -F'\t' '$1 == "V" { printf "%-10s | %-15s | %s\n", $4, $2, $6 }' "$index_file"
 
 	# --- CERTIFICADOS REVOGADOS ---
-	echo -e "\n[-] CERTIFICADOS REVOGADOS:"
+	echo -e "\n[WARN] CERTIFICADOS REVOGADOS:"
 	echo "---------------------------------------------------------"
 	printf "%-10s | %-15s | %s\n" "SERIAL" "REVOGADO EM" "SUBJECT (DN)"
 	awk -F'\t' '$1 == "R" { printf "%-10s | %-15s | %s\n", $4, $3, $6 }' "$index_file"

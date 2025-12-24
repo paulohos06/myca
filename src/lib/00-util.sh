@@ -53,3 +53,23 @@ formatstring() {
         tr -d '[:space:]'
         #sed 's/[^a-z0-9]//g'
 }
+
+x509_ts_to_date() {
+    local ts="$1"
+
+    # valida formato básico
+    if [[ ! "$ts" =~ ^[0-9]{12}Z$ ]]; then
+        echo "Erro: formato inválido. Use YYMMDDhhmmssZ" >&2
+        return 1
+    fi
+
+    local year="20${ts:0:2}"
+    local month="${ts:2:2}"
+    local day="${ts:4:2}"
+    local hour="${ts:6:2}"
+    local min="${ts:8:2}"
+    local sec="${ts:10:2}"
+
+    date -u -d "$year-$month-$day $hour:$min:$sec" "+%d/%m/%Y %H:%M:%S UTC"
+}
+

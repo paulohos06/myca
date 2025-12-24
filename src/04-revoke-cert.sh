@@ -20,6 +20,8 @@ fi
 revokecert() {
   local ca_name="${1:-}"
   local serial_number="${2:-}"
+	local cyear=$(date +%Y)
+  local nyear=$(date --date '1 year' "+%Y")
 	
   # Validação de argumentos obrigatórios
   [[ -z "$ca_name" ]] && error_exit "O nome da CA (-n) é obrigatório."
@@ -29,12 +31,12 @@ revokecert() {
   local base_path="$PARENT_DIR/ca/$ca_name"
   local certs_dir="$base_path/certs"
   local ca_conf_file="$base_path/conf/$ca_name.cnf"
-  
+	  
   # 1. Validação de Infraestrutura
   [[ ! -d "$base_path" ]] && error_exit "Estrutura da CA '$ca_name' não encontrada em $base_path"
   [[ ! -f "$ca_conf_file" ]] && error_exit "Arquivo de config da CA não encontrado: $ca_conf_file"
 
-  # 2. Definição de Política (Normalização)
+  # 2. Revogação do Certificado
   echo "[+] Iniciando busca pelo Serial: $serial_number"
 	find "$certs_dir" -type f -name "*.cert.pem" | while read -r cert; do
     # Extrai o serial do arquivo atual (em maiúsculas para evitar erro de comparação)
@@ -43,9 +45,12 @@ revokecert() {
 		  echo "[+] Certificado encontrado em: $cert"
 			echo "[+] Iniciando a revogação..."
 			openssl ca -config "$ca_conf_file" -revoke "$cert"
+			csr_file=$(sed 's|/certs/|/csr/|; s|\.cert\.pem$|.csr.pem|' <<< "$cert")
 
 		  if [ $? -eq 0 ]; then
         echo "[OK] Revogação concluída. Atualizando CRL..."
+				mv "$cert" "${cert%.cert.pem}_revoked.cert.pem"
+				mv "$csr_file" "${csr_file%.csr.pem}_revoked.csr.pem"
 				openssl ca -config "$ca_conf_file" -gencrl -out "$base_path/crl/$ca_name.crl"
 				exit 0
 			else
