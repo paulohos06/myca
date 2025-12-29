@@ -47,7 +47,7 @@ configure_ca() {
     [[ ! -f "$SRC_DIR/conf/ca.cnf" ]] && error_exit "Template conf/ca.cnf não encontrado."
 
     # Cópia e substituição usando sintaxe portável
-    cp -r "$SRC_DIR/conf/profiles" "$path/conf/"
+    mkdir -p "$path/conf/profiles" && cp -r "$SRC_DIR/conf/profiles/"*.cnf "$path/conf/profiles"
     sed -e "s|/pathdir/|$path|g" \
         -e "s|ca.key.pem|$name.key.pem|g" \
         -e "s|ca.cert.pem|$name.cert.pem|g" \
