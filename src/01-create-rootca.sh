@@ -8,96 +8,91 @@ set -euo pipefail
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SRC_DIR")"
 CA_BASE_DIR="$PARENT_DIR/ca"
-PKI_SUBDIRS=("certs" "conf" "crl" "csr" "newcerts" "private")
 
-UTILS="$SRC_DIR/lib/00-util.sh"
-if [[ -f "$UTILS" ]]; then
-    # shellcheck source=/dev/null
-    source "$UTILS"
-else
-    echo "Erro: Utilitários não encontrados em $UTILS." >&2
-    exit 1
-fi
+UTILS="$SRC_DIR/libs/utils.sh"
+[[ -f "$UTILS" ]] && source "$UTILS" || {
+  echo "[ERRO] Função de utilitários não encontrados em $UTILS." >&2
+  exit 1
+}
 
 # --- Funções Internas ---
 setup_structure() {
-    local module_path="$1"
-    echo "[+] Criando estrutura de diretórios em $module_path..."
+  local ca_name="$1"
+  local pki_subdirs=("certs" "conf" "crl" "csr" "newcerts" "private")
+  echo "[+] Criando estrutura de diretórios em $ca_name..."
     
-    for dir in "${PKI_SUBDIRS[@]}"; do
-        mkdir -p "$module_path/$dir"
-    done
+  for dir in "${pki_subdirs[@]}"; do
+    mkdir -p "$ca_name/$dir"
+  done
 
-    # Arquivos de controle do OpenSSL
-    chmod 700 "$module_path/private"
-    touch "$module_path/index.txt"
-    if [[ ! -f "$module_path/serial" ]]; then
-        echo 1000 > "$module_path/serial"
-    fi
+  # Arquivos de controle do OpenSSL
+  chmod 700 "$ca_name/private"
+  touch "$ca_name/index.txt"
+  touch "$ca_name/serial"
 }
 
 configure_ca() {
-    local name="$1"
-    local path="$2"
-    local target_conf="$path/conf/$name.cnf"
+  local ca_name="$1"
+  local path="$2"
+  local target_conf="$path/conf/$ca_name.cnf"
 
-    echo "[+] Configurando arquivo OpenSSL para $name..."
+  echo "[+] Configurando arquivo OpenSSL para $ca_name..."
     
-    # Valida template original
-    [[ ! -f "$SRC_DIR/conf/ca.cnf" ]] && error_exit "Template conf/ca.cnf não encontrado."
+  # Valida template original
+  [[ ! -f "$SRC_DIR/conf/ca.cnf" ]] && error_exit "Template conf/ca.cnf não encontrado."
 
-    # Cópia e substituição usando sintaxe portável
-    mkdir -p "$path/conf/profiles" && cp -r "$SRC_DIR/conf/profiles/"*.cnf "$path/conf/profiles"
-    sed -e "s|/pathdir/|$path|g" \
-        -e "s|ca.key.pem|$name.key.pem|g" \
-        -e "s|ca.cert.pem|$name.cert.pem|g" \
-        "$SRC_DIR/conf/ca.cnf" > "$target_conf"
+  # Cópia dos arquivos de configuração da CA
+  mkdir -p "$path/conf/profiles" && cp -r "$SRC_DIR/conf/profiles/"*.cnf "$path/conf/profiles"
+  sed -e "s|/pathdir/|$path|g" \
+      -e "s|ca.key.pem|$ca_name.key.pem|g" \
+      -e "s|ca.cert.pem|$ca_name.cert.pem|g" \
+      "$SRC_DIR/conf/ca.cnf" > "$target_conf"
 }
 
 newrootca() {
-    local name_input="${1:-}"
-		local name=$(formatstring "$name_input")
-    local module_path="$CA_BASE_DIR/$name"
+  local name_input="${1:-}"
+	local ca_name=$(formatstring "$name_input")
+  local newca_dir="$CA_BASE_DIR/$ca_name"
 
-    # Validações Iniciais
-    [[ -z "$name" ]] && { error_exit "O nome da AC não foi fornecido."; }
-    [[ -d "$module_path" ]] && error_exit "A AC '$name' já existe em $module_path."
+  # Validações Iniciais
+  [[ -z "$ca_name" ]] && { error_exit "Informe o nome da CA.."; }
+  [[ -d "$newca_dir" ]] && error_exit "A CA informada já existe."
 
-    echo "[+] Iniciando criação da Root CA: $name"
+  echo "[+] Iniciando criação da Root CA: $ca_name"
+  # 1. Preparar Diretórios
+  setup_structure "$newca_dir"
 
-    # 1. Preparar Diretórios
-    setup_structure "$module_path"
+  # 2. Configurar Arquivos
+  configure_ca "$ca_name" "$newca_dir"
 
-    # 2. Configurar Arquivos
-    configure_ca "$name" "$module_path"
+  # 3. Gerar Chave Privada (AES-256)
+  local key_file="$newca_dir/private/$ca_name.key.pem"
+  echo "[+] Gerando chave privada RSA 4096 bits..."
+  openssl genrsa -aes256 -out "$key_file" 4096
+  chmod 400 "$key_file"
 
-    # 3. Gerar Chave Privada (AES-256)
-    local key_file="$module_path/private/$name.key.pem"
-    echo "[+] Gerando chave privada RSA 4096 bits..."
-    openssl genrsa -aes256 -out "$key_file" 4096
-    chmod 400 "$key_file"
-
-    # 4. Gerar Certificado Autoassinado (Root)
-    local cert_file="$module_path/certs/$name.cert.pem"
-    echo "[+] Gerando certificado Root (3650 dias)..."
-    openssl req -config "$module_path/conf/$name.cnf" \
-        -key "$key_file" \
-        -new -x509 -days 3650 -sha256 \
-        -out "$cert_file"
-
-    echo -e "\n[OK] AC Raiz '$name' criada com sucesso."
-    echo "Localização: $module_path"
+  # 4. Gerar Certificado Autoassinado (Root)
+  local cert_file="$newca_dir/certs/$ca_name.cert.pem"
+  echo "[+] Gerando certificado Root (3650 dias)..."
+  openssl req -config "$newca_dir/conf/$ca_name.cnf" \
+      -key "$key_file" \
+      -new -x509 -days 3650 -sha256 \
+      -out "$cert_file"
+  
+	echo -e "\n[OK] Sucesso: CA '$ca_name' criada com sucesso."
+  echo -e "[OK] Localização: $newca_dir"
 }
 
 # --- Parsing de Argumentos ---
-MODULE_NAME=""
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  MODULE_NAME=""
 
-while getopts "n:h" opt; do
+  while getopts "n:h" opt; do
     case $opt in
         n) MODULE_NAME="$OPTARG" ;;
         h) showhelp ;;
         *) showhelp ;;
     esac
-done
-
+  done
+fi
 newrootca "$MODULE_NAME"

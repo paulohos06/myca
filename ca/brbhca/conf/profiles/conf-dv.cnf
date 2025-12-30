@@ -1,0 +1,24 @@
+### Configurações de uso exclusivo da CA ###
+[ req ]
+default_bits            = 2048
+default_md              = sha256
+distinguished_name      = req_dn
+req_extensions          = req_ext
+string_mask             = utf8only
+prompt                  = no
+encrypt_key             = yes
+
+[ req_ext ]
+basicConstraints = CA:FALSE
+subjectKeyIdentifier = hash
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
+subjectAltName = @alt_names
+
+### Configurações para CSR ###
+[ req_dn ]
+commonName = nome_parceiro.brb.com.br
+
+[ alt_names ]
+DNS.1 = nome_parceiro.brb.com.br
+DNS.2 = www.nome_parceiro.brb.com.br

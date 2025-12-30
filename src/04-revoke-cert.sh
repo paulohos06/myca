@@ -6,16 +6,11 @@ set -euo pipefail
 # --- Variáveis Globais ---
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SRC_DIR")"
-UTILS="$SRC_DIR/lib/00-util.sh"
-
-# --- Carregamento de Dependências ---
-if [[ -f "$UTILS" ]]; then
-  # shellcheck source=/dev/null
-  source "$UTILS"
-else
-  echo "Erro: Arquivo de utilidades não encontrado em $UTILS." >&2
+UTILS="$SRC_DIR/libs/utils.sh"
+[[ -f "$UTILS" ]] && source "$UTILS" || {
+  echo "[ERRO] Função de utilitários não encontrados em $UTILS." >&2
   exit 1
-fi
+}
 
 revokecert() {
   local ca_name="${1:-}"

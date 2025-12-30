@@ -9,35 +9,6 @@ error_exit() {
     exit 1
 }
 
-showhelp() {
-	echo -e "[WARN] Show Help"
-}
-
-# Função para validar o nome do módulo
-validate_module_name() {
-    if [[ -z "$1" ]]; then
-        show_help "create_root"
-        error_exit "Erro: O nome do módulo deve ser fornecido com a opção -name."
-    fi
-    # Adicionar aqui verificação de caracteres inválidos, se necessário (ex: regex)
-    # if [[ ! "$1" =~ ^[a-zA-Z0-9_-]+$ ]]; then error_exit "Nome do módulo inválido..."
-    return 0
-}
-
-get_script_path() {
-  local script_path
-  local script_dir
-
-  # 1. Encontra o diretório real onde o script está (trata symbolic links)
-  script_path="$(readlink -f "${BASH_SOURCE[0]}")"
-
-  # 2. Obtém o diretório do script (o diretório pai do SCRIPT_PATH)
-  script_dir="$(dirname "$script_path")"
-
-  # Retorna o valor do diretório anterior
-  echo "$(dirname "$script_dir")"
-}
-
 formatstring() {
     local input="$1"
 

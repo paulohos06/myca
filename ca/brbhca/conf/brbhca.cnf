@@ -3,7 +3,7 @@ default_ca=CA_default
 
 [ CA_default ]
 # Diretórios e arquivos
-dir=/pathdir/
+dir=/home/paulo/pkibrb/ca/brbhca
 certs=$dir/certs
 crl_dir=$dir/crl
 new_certs_dir=$dir/newcerts
@@ -15,8 +15,8 @@ default_crl_days=180
 unique_subject=no
 
 # Algoritmos e configurações
-private_key=$dir/private/ca.key.pem
-certificate=$dir/certs/ca.cert.pem
+private_key=$dir/private/brbhca.key.pem
+certificate=$dir/certs/brbhca.cert.pem
 default_days=3650
 default_md=sha256
 
@@ -46,7 +46,7 @@ emailAddress=optional
 [ req ]
 default_bits=4096
 default_md=sha256
-default_keyfile=ca.key.pem
+default_keyfile=brbhca.key.pem
 distinguished_name=req_dn
 x509_extensions=req_ext
 
