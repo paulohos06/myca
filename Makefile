@@ -15,15 +15,18 @@ ca_dir := ./ca
 # Verifica se a variável foi definida, caso contrário interrompe com erro.
 check_var = $(if $(strip $($1)),,$(error [ERRO]: A variável '$1' não foi definida. Use '$1=<valor>'))
 
-.PHONY: help setup-ca create-csr sign-csr remove-ca revoke-cert list-certs list-rootca
-
 # Inclui o arquivo de configurações de ambiente (.env)
--include .env
-export $(shell sed 's/=.*//' .env)
+ifneq ("$(wildcard .env)","")
+  include .env
+  export $(shell sed 's/=.*//' .env)
+endif
+
+.PHONY: help setup-ca create-csr sign-csr remove-ca revoke-cert list-certs list-rootca
 
 help: ## Exibe esta mensagem de ajuda. Ex: make help
 	@echo -e "$(YELLOW)Comandos disponíveis:$(RESET)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	#@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 create-rootca: ## Inicializa uma nova AC Raiz. Ex: make create-rootca ca=rootca
 	@$(call check_var,ca)
