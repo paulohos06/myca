@@ -5,9 +5,9 @@
 set -euo pipefail
 
 # --- Variáveis Globais e Dependências ---
-SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 PARENT_DIR="$(dirname "$SRC_DIR")"
-CA_BASE_DIR="$PARENT_DIR/ca"
+CA_BASE_DIR="${CA_BASE_DIR:-$PARENT_DIR/ca}"
 
 UTILS="$SRC_DIR/libs/utils.sh"
 [[ -f "$UTILS" ]] && source "$UTILS" || {
@@ -53,6 +53,7 @@ newrootca() {
   local name_input="${1:-}"
 	local ca_name=$(formatstring "$name_input")
   local newca_dir="$CA_BASE_DIR/$ca_name"
+	local ca_password="${CA_PASS:-pass123}"
 
   # Validações Iniciais
   [[ -z "$ca_name" ]] && { error_exit "Informe o nome da CA.."; }
@@ -68,7 +69,7 @@ newrootca() {
   # 3. Gerar Chave Privada (AES-256)
   local key_file="$newca_dir/private/$ca_name.key.pem"
   echo "[+] Gerando chave privada RSA 4096 bits..."
-  openssl genrsa -aes256 -out "$key_file" 4096
+  openssl genrsa -aes256 -out "$key_file" -passout pass:"$ca_password" 4096
   chmod 400 "$key_file"
 
   # 4. Gerar Certificado Autoassinado (Root)
@@ -77,6 +78,7 @@ newrootca() {
   openssl req -config "$newca_dir/conf/$ca_name.cnf" \
       -key "$key_file" \
       -new -x509 -days 3650 -sha256 \
+			-passin pass:"$ca_password" \
       -out "$cert_file"
   
 	echo -e "\n[OK] Sucesso: CA '$ca_name' criada com sucesso."

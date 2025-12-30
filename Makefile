@@ -15,7 +15,11 @@ ca_dir := ./ca
 # Verifica se a variável foi definida, caso contrário interrompe com erro.
 check_var = $(if $(strip $($1)),,$(error [ERRO]: A variável '$1' não foi definida. Use '$1=<valor>'))
 
-.PHONY: help setup-ca create-csr sign-csr remove-ca revoke-cert
+.PHONY: help setup-ca create-csr sign-csr remove-ca revoke-cert list-certs list-rootca
+
+# Inclui o arquivo de configurações de ambiente (.env)
+-include .env
+export $(shell sed 's/=.*//' .env)
 
 help: ## Exibe esta mensagem de ajuda. Ex: make help
 	@echo -e "$(YELLOW)Comandos disponíveis:$(RESET)"
@@ -56,6 +60,6 @@ list-certs: ## Lista os certificados válidos e revogados da CA. Ex: make list-c
 	#@echo -e "$(YELLOW)Listagem de Certificados da CA: $(ca)...$(RESET)"
 	@bash src/05-list-certs.sh -n $(ca)
 	
-list-rootca: ## Lista as CAs existentes
+list-rootca: ## Lista as CAs existentes. Ex: make list-rootca
 	#@echo -e "$(YELLOW)Listagem AC Raiz$(RESET)"
 	@bash src/06-list-rootca.sh
